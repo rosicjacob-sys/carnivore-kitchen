@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#faf6f0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="Carnivore diet allowed ingredients and meal ideas — a kitchen reference.">
+<title>Carnivore Kitchen</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥩</text></svg>">
+<style>
+  :root{
+    --bg:#faf6f0; --card:#ffffff; --ink:#2b2118; --ink-soft:#6b5d4f;
+    --accent:#a63d2f; --accent-soft:#f6e3de;
+    --green:#3d7a4a; --green-bg:#e9f2ea;
+    --amber:#9a6b1f; --amber-bg:#f7eeda;
+    --orange:#b05c22; --orange-bg:#f9e9dc;
+    --red:#a63d2f; --red-bg:#f6e3de;
+    --line:#e8dfd3; --shadow:0 1px 3px rgba(43,33,24,.08), 0 4px 14px rgba(43,33,24,.06);
+    --radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.5;
+    padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  }
+  header{padding:28px 20px 10px; max-width:1080px; margin:0 auto}
+  header h1{font-size:1.7rem; letter-spacing:-.02em}
+  header p{color:var(--ink-soft); font-size:.95rem; margin-top:2px}
+
+  /* ---- bottom tab bar ---- */
+  nav{
+    position:fixed; bottom:0; left:0; right:0; z-index:50;
+    background:rgba(255,255,255,.95); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line);
+    display:flex; justify-content:space-around;
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+  }
+  nav button{
+    flex:1; max-width:140px; border:0; background:none; cursor:pointer;
+    font:inherit; font-size:.72rem; font-weight:600; color:var(--ink-soft);
+    display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 0;
+    border-radius:12px; position:relative;
+  }
+  nav button .ic{font-size:1.35rem; line-height:1.2}
+  nav button.active{color:var(--accent)}
+  nav button .badge{
+    position:absolute; top:-2px; right:calc(50% - 24px);
+    background:var(--accent); color:#fff; font-size:.62rem; font-weight:700;
+    min-width:17px; height:17px; border-radius:9px; display:none;
+    align-items:center; justify-content:center; padding:0 4px;
+  }
+  nav button .badge.show{display:flex}
+
+  main{max-width:1080px; margin:0 auto; padding:8px 16px 40px}
+  section{display:none}
+  section.active{display:block; animation:fade .18s ease}
+  @keyframes fade{from{opacity:.4; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .section-intro{color:var(--ink-soft); font-size:.95rem; margin:6px 2px 18px; max-width:640px}
+  h2{font-size:1.35rem; margin:10px 2px 4px; letter-spacing:-.01em}
+
+  /* ---- ingredients ---- */
+  .tier{border-radius:var(--radius); padding:18px 16px; margin-bottom:16px; box-shadow:var(--shadow); background:var(--card); border-left:6px solid var(--line)}
+  .tier h3{font-size:1.05rem; display:flex; align-items:center; gap:8px; margin-bottom:4px}
+  .tier .sub{font-size:.85rem; color:var(--ink-soft); margin-bottom:12px}
+  .tier.t-green{border-left-color:var(--green)} .tier.t-green h3{color:var(--green)}
+  .tier.t-amber{border-left-color:var(--amber)} .tier.t-amber h3{color:var(--amber)}
+  .tier.t-orange{border-left-color:var(--orange)} .tier.t-orange h3{color:var(--orange)}
+  .tier.t-red{border-left-color:var(--red)} .tier.t-red h3{color:var(--red)}
+  .ing-group{margin-bottom:12px}
+  .ing-group:last-child{margin-bottom:0}
+  .ing-group b{font-size:.92rem; display:block; margin-bottom:6px}
+  .chips{display:flex; flex-wrap:wrap; gap:7px}
+  .chip{font-size:.85rem; padding:6px 12px; border-radius:999px; background:var(--bg); border:1px solid var(--line); white-space:nowrap}
+  .t-green .chip{background:var(--green-bg); border-color:#cfe2d2}
+  .t-amber .chip{background:var(--amber-bg); border-color:#e8d9b8}
+  .t-orange .chip{background:var(--orange-bg); border-color:#ecd3bc}
+  .t-red .chip{background:var(--red-bg); border-color:#ecccc5}
+  .tipbox{background:var(--card); border-radius:var(--radius); padding:18px 16px; box-shadow:var(--shadow); margin-bottom:16px}
+  .tipbox h3{font-size:1.05rem; margin-bottom:8px}
+  .tipbox li{margin:0 0 8px 20px; font-size:.92rem}
+  .tipbox li:last-child{margin-bottom:0}
+
+  /* ---- dish cards ---- */
+  .grid{display:grid; grid-template-columns:1fr; gap:16px; margin-top:14px}
+  @media(min-width:620px){.grid{grid-template-columns:1fr 1fr}}
+  @media(min-width:980px){.grid{grid-template-columns:1fr 1fr 1fr}}
+  .card{
+    background:var(--card); border-radius:var(--radius); overflow:hidden;
+    box-shadow:var(--shadow); display:flex; flex-direction:column;
+    transition:opacity .2s, box-shadow .2s; position:relative;
+  }
+  .card img{width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:#efe8dd}
+  .card .body{padding:14px 14px 12px; display:flex; flex-direction:column; gap:8px; flex:1}
+  .card h4{font-size:1.05rem; letter-spacing:-.01em}
+  .card .desc{font-size:.88rem; color:var(--ink-soft); flex:1}
+  .card .meta{display:flex; flex-wrap:wrap; gap:6px}
+  .tag{font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); background:var(--bg); border:1px solid var(--line); padding:3px 9px; border-radius:999px}
+  .tag.time{color:var(--accent); background:var(--accent-soft); border-color:#ecccc5}
+  .actions{display:flex; gap:10px; margin-top:4px}
+  .actions button{
+    flex:1; border:1.5px solid var(--line); background:var(--card); border-radius:12px;
+    font:inherit; font-size:.92rem; font-weight:700; padding:11px 0; cursor:pointer;
+    color:var(--ink-soft); transition:all .15s; -webkit-tap-highlight-color:transparent;
+  }
+  .actions .love.on{background:#3d7a4a; border-color:#3d7a4a; color:#fff}
+  .actions .nope.on{background:#8c8378; border-color:#8c8378; color:#fff}
+  .card.is-love{box-shadow:0 0 0 2.5px #3d7a4a, var(--shadow)}
+  .card.is-nope{opacity:.45}
+  .card .flag{
+    position:absolute; top:10px; left:10px; z-index:2; display:none;
+    font-size:.75rem; font-weight:800; padding:5px 11px; border-radius:999px; color:#fff;
+  }
+  .card.is-love .flag.f-love{display:block; background:#3d7a4a}
+  .card.is-nope .flag.f-nope{display:block; background:#8c8378}
+
+  /* ---- picks ---- */
+  .picks-block{margin-bottom:22px}
+  .picks-block h3{font-size:1.05rem; margin-bottom:10px}
+  .picks-list{display:flex; flex-direction:column; gap:8px}
+  .pick-row{
+    background:var(--card); border-radius:12px; box-shadow:var(--shadow);
+    display:flex; align-items:center; gap:12px; padding:8px 12px 8px 8px;
+  }
+  .pick-row img{width:56px; height:44px; object-fit:cover; border-radius:8px; background:#efe8dd}
+  .pick-row .nm{font-weight:600; font-size:.95rem; flex:1}
+  .pick-row .cat{font-size:.72rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em}
+  .pick-row button{border:0; background:none; font-size:1.05rem; cursor:pointer; padding:6px; color:var(--ink-soft)}
+  .empty{color:var(--ink-soft); font-size:.92rem; background:var(--card); border:1.5px dashed var(--line); border-radius:12px; padding:16px; text-align:center}
+  .share-bar{display:flex; gap:10px; margin:4px 0 22px}
+  .share-bar button{
+    flex:1; font:inherit; font-weight:700; font-size:.95rem; padding:13px 0;
+    border-radius:12px; cursor:pointer; border:1.5px solid var(--accent);
+  }
+  #btnCopy{background:var(--accent); color:#fff}
+  #btnShare{background:var(--card); color:var(--accent)}
+  .hint{font-size:.85rem; color:var(--ink-soft); background:var(--accent-soft); border-radius:12px; padding:12px 14px; margin-bottom:14px}
+  footer{max-width:1080px; margin:30px auto 0; padding:0 20px; color:var(--ink-soft); font-size:.8rem; text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🥩 Carnivore Kitchen</h1>
+  <p>What we can eat, and what to cook — tap ♥ or ✕ on any plate.</p>
+</header>
+
+<main>
+
+<!-- ================= INGREDIENTS ================= -->
+<section id="tab-ingredients" class="active">
+  <h2>Allowed ingredients</h2>
+  <p class="section-intro">The carnivore rule of thumb: <b>if it came from an animal, it's food. If it grew from the ground, it's not.</b> Salt and water are always fine.</p>
+
+  <div class="tier t-green">
+    <h3>✅ Eat freely — the core</h3>
+    <div class="sub">These are always carnivore. Build every meal from this list.</div>
+    <div class="ing-group"><b>Beef &amp; other ruminants (the foundation)</b>
+      <div class="chips"><span class="chip">Ribeye</span><span class="chip">NY strip</span><span class="chip">Sirloin</span><span class="chip">T-bone</span><span class="chip">Chuck roast</span><span class="chip">Brisket</span><span class="chip">Short ribs</span><span class="chip">Ground beef (80/20)</span><span class="chip">Oxtail</span><span class="chip">Lamb (all cuts)</span><span class="chip">Bison</span><span class="chip">Venison</span><span class="chip">Goat</span></div>
+    </div>
+    <div class="ing-group"><b>Pork</b>
+      <div class="chips"><span class="chip">Pork belly</span><span class="chip">Shoulder</span><span class="chip">Chops</span><span class="chip">Ribs</span><span class="chip">Bacon (clean label)</span><span class="chip">Ham (no sugar glaze)</span><span class="chip">Sausage (meat + salt only)</span></div>
+    </div>
+    <div class="ing-group"><b>Poultry (with the skin on)</b>
+      <div class="chips"><span class="chip">Chicken thighs</span><span class="chip">Drumsticks</span><span class="chip">Wings</span><span class="chip">Whole chicken</span><span class="chip">Duck</span><span class="chip">Turkey</span><span class="chip">Chicken liver</span></div>
+    </div>
+    <div class="ing-group"><b>Fish &amp; seafood (fatty fish are best)</b>
+      <div class="chips"><span class="chip">Salmon</span><span class="chip">Sardines</span><span class="chip">Mackerel</span><span class="chip">Trout</span><span class="chip">Branzino</span><span class="chip">Cod</span><span class="chip">Tuna</span><span class="chip">Shrimp</span><span class="chip">Scallops</span><span class="chip">Oysters</span><span class="chip">Mussels</span><span class="chip">Crab</span><span class="chip">Lobster</span></div>
+    </div>
+    <div class="ing-group"><b>Eggs</b>
+      <div class="chips"><span class="chip">Chicken eggs</span><span class="chip">Duck eggs</span><span class="chip">Quail eggs</span><span class="chip">Fish roe / caviar</span></div>
+    </div>
+    <div class="ing-group"><b>Organ meats (most nutrient-dense food there is)</b>
+      <div class="chips"><span class="chip">Beef liver</span><span class="chip">Heart</span><span class="chip">Kidney</span><span class="chip">Tongue</span><span class="chip">Bone marrow</span><span class="chip">Sweetbreads</span></div>
+    </div>
+    <div class="ing-group"><b>Cooking fats (all animal-based)</b>
+      <div class="chips"><span class="chip">Butter</span><span class="chip">Ghee</span><span class="chip">Beef tallow</span><span class="chip">Lard</span><span class="chip">Duck fat</span><span class="chip">Bacon grease</span></div>
+    </div>
+    <div class="ing-group"><b>Pantry &amp; drinks</b>
+      <div class="chips"><span class="chip">Salt (any kind)</span><span class="chip">Bone broth (no additives)</span><span class="chip">Water</span><span class="chip">Sparkling water</span><span class="chip">Gelatin / collagen</span></div>
+    </div>
+  </div>
+
+  <div class="tier t-amber">
+    <h3>🧀 Usually fine — most carnivores include these</h3>
+    <div class="sub">Technically dairy or plant, but well tolerated by most and standard on the diet.</div>
+    <div class="chips"><span class="chip">Butter &amp; ghee</span><span class="chip">Hard aged cheese (cheddar, parmesan, gouda)</span><span class="chip">Heavy cream (a splash)</span><span class="chip">Black coffee</span><span class="chip">Plain tea</span></div>
+  </div>
+
+  <div class="tier t-orange">
+    <h3>⚠️ Test your tolerance</h3>
+    <div class="sub">Fine for some people, cause bloating / stalls for others. Try one at a time and watch how you feel.</div>
+    <div class="chips"><span class="chip">Milk</span><span class="chip">Soft cheese</span><span class="chip">Cottage cheese</span><span class="chip">Greek yogurt</span><span class="chip">Cream cheese</span><span class="chip">Whey protein</span><span class="chip">Black pepper &amp; simple spices</span><span class="chip">Honey (only if doing “animal-based”)</span></div>
+  </div>
+
+  <div class="tier t-red">
+    <h3>🚫 Not carnivore — skip</h3>
+    <div class="sub">Everything plant-based or processed with fillers.</div>
+    <div class="chips"><span class="chip">Vegetables</span><span class="chip">Fruit</span><span class="chip">Bread, rice, pasta, grains</span><span class="chip">Beans &amp; legumes</span><span class="chip">Nuts &amp; seeds</span><span class="chip">Sugar &amp; sweeteners</span><span class="chip">Seed oils (canola, sunflower, soybean)</span><span class="chip">Ketchup, BBQ &amp; most sauces</span><span class="chip">Breaded / battered meat</span><span class="chip">Alcohol</span><span class="chip">Soda &amp; juice</span></div>
+  </div>
+
+  <div class="tipbox">
+    <h3>🏷️ Label-reading cheatsheet (for the store)</h3>
+    <ul>
+      <li><b>Bacon &amp; ham:</b> ingredients should read roughly “pork, water, salt.” A little sugar in the cure is OK if the label shows 0g sugar per serving — it cooks off.</li>
+      <li><b>Sausages:</b> the usual trap. Avoid ones listing rusk, breadcrumbs, starch, dextrose, maltodextrin, or soy. Butcher’s plain pork sausage is usually safe.</li>
+      <li><b>Ground beef:</b> just beef. 80/20 fat ratio keeps you full — very lean mince is a common beginner mistake.</li>
+      <li><b>Broth:</b> store cartons often have onion, celery, yeast extract. Look for bones + salt only, or make it at home.</li>
+      <li><b>Canned fish:</b> in water or olive oil is debatable — in water or its own oil is cleanest. Skip anything in sunflower/soybean oil.</li>
+      <li><b>Cheese:</b> real block cheese only. Pre-shredded has potato starch; “cheese product” slices aren’t cheese.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= BREAKFAST ================= -->
+<section id="tab-breakfast">
+  <h2>Breakfast plates</h2>
+  <p class="section-intro">Tap <b>♥ Love it</b> on plates you want in the rotation, <b>✕ Not for me</b> on ones you don't. Choices are saved on this phone.</p>
+  <div class="grid" id="grid-breakfast"></div>
+</section>
+
+<!-- ================= DINNER ================= -->
+<section id="tab-dinner">
+  <h2>Dinner plates</h2>
+  <p class="section-intro">Same idea — build the dinner rotation. Times are total, most of it hands-off for the slow ones.</p>
+  <div class="grid" id="grid-dinner"></div>
+</section>
+
+<!-- ================= MY PICKS ================= -->
+<section id="tab-picks">
+  <h2>My picks</h2>
+  <div class="hint">📋 When you've voted on the plates, tap <b>Copy my preferences</b> and paste it to Claude — it'll remember what you love and suggest meals around it.</div>
+  <div class="share-bar">
+    <button id="btnCopy">Copy my preferences</button>
+    <button id="btnShare">Share…</button>
+  </div>
+  <div class="picks-block">
+    <h3>💚 Loved (<span id="cntLove">0</span>)</h3>
+    <div class="picks-list" id="listLove"><div class="empty">Nothing loved yet — go tap some plates!</div></div>
+  </div>
+  <div class="picks-block">
+    <h3>🚫 Not for me (<span id="cntNope">0</span>)</h3>
+    <div class="picks-list" id="listNope"><div class="empty">Nothing rejected yet.</div></div>
+  </div>
+  <div class="picks-block">
+    <h3>🤔 Still undecided (<span id="cntUnrated">0</span>)</h3>
+    <div class="picks-list" id="listUnrated"></div>
+  </div>
+</section>
+
+</main>
+
+<nav>
+  <button data-tab="ingredients" class="active"><span class="ic">🥩</span>Ingredients</button>
+  <button data-tab="breakfast"><span class="ic">🍳</span>Breakfast</button>
+  <button data-tab="dinner"><span class="ic">🍖</span>Dinner</button>
+  <button data-tab="picks"><span class="ic">💚</span>My Picks<span class="badge" id="navBadge">0</span></button>
+</nav>
+
+<footer>Made for the kitchen counter · votes are saved on this device</footer>
+
+<script>
+const DISHES = [
+  // ---------- breakfast ----------
+  {id:"bacon-eggs", cat:"breakfast", name:"Bacon & Fried Eggs", time:"10 min",
+   desc:"The classic. Crispy bacon first, then eggs fried in the bacon fat. Flaky salt on top.", tags:["pork","eggs","quick"]},
+  {id:"steak-eggs", cat:"breakfast", name:"Steak & Eggs", time:"15 min",
+   desc:"Sliced sirloin (or last night's leftover steak) with fried eggs. The king of carnivore breakfasts.", tags:["beef","eggs"]},
+  {id:"cheese-omelette", cat:"breakfast", name:"Three-Egg Cheese Omelette", time:"8 min",
+   desc:"Folded in butter with melted cheddar. Toss in leftover meat if there is any.", tags:["eggs","dairy","quick"]},
+  {id:"scrambled-salmon", cat:"breakfast", name:"Scrambled Eggs & Smoked Salmon", time:"10 min",
+   desc:"Soft-scrambled slowly in butter, smoked salmon ribbons on top. Fancy, but ten minutes.", tags:["eggs","seafood","quick"]},
+  {id:"sausage-patties", cat:"breakfast", name:"Pork Sausage Patties", time:"12 min",
+   desc:"Plain ground pork + salt, shaped and pan-fried. If store-bought, check the label for fillers.", tags:["pork","quick"]},
+  {id:"ham-egg-cups", cat:"breakfast", name:"Ham & Egg Cups", time:"20 min",
+   desc:"Ham slices pressed into a muffin tin, egg cracked inside, baked. Great to batch for the week.", tags:["pork","eggs","batch"]},
+  {id:"beef-breakfast-bowl", cat:"breakfast", name:"Ground Beef & Egg Bowl", time:"12 min",
+   desc:"Browned 80/20 ground beef, good pinch of salt, runny fried egg on top. Cheap, fast, filling.", tags:["beef","eggs","quick","budget"]},
+  {id:"carnivore-pancakes", cat:"breakfast", name:"Carnivore Pancakes", time:"15 min",
+   desc:"Eggs + cream cheese blended and cooked like small pancakes. Butter on top, no syrup needed.", tags:["eggs","dairy"]},
+  {id:"soft-boiled-eggs", cat:"breakfast", name:"Soft-Boiled Eggs & Butter", time:"8 min",
+   desc:"Six-and-a-half-minute eggs with jammy yolks, a pat of butter, coarse salt. The minimal breakfast.", tags:["eggs","quick"]},
+  {id:"cold-steak", cat:"breakfast", name:"Cold Steak Slices", time:"0 min",
+   desc:"Last night's steak, sliced thin, eaten cold with flaky salt. Zero cooking, zero dishes.", tags:["beef","quick"]},
+  {id:"cottage-bacon", cat:"breakfast", name:"Cottage Cheese & Bacon Bowl", time:"10 min",
+   desc:"Full-fat cottage cheese topped with crispy bacon crumbles. Only if dairy sits well with you.", tags:["dairy","pork","quick"]},
+  {id:"broth-eggs", cat:"breakfast", name:"Bone Broth & Boiled Eggs", time:"10 min",
+   desc:"A hot mug of salted bone broth with two boiled eggs. Light start — great for breaking a fast.", tags:["eggs","light","quick"]},
+  {id:"duck-eggs", cat:"breakfast", name:"Duck Eggs in Tallow", time:"8 min",
+   desc:"Bigger, richer yolks than chicken eggs. Fried crispy-edged in beef tallow.", tags:["eggs","quick"]},
+  {id:"pork-belly-eggs", cat:"breakfast", name:"Pork Belly Bites & Eggs", time:"25 min",
+   desc:"Cubed pork belly crisped in its own fat, fried eggs alongside. The weekend treat.", tags:["pork","eggs"]},
+
+  // ---------- dinner ----------
+  {id:"ribeye-butter", cat:"dinner", name:"Ribeye with Butter", time:"15 min",
+   desc:"Seared hard in tallow, rested under a melting pat of butter. The benchmark carnivore dinner.", tags:["beef","quick"]},
+  {id:"ny-strip", cat:"dinner", name:"NY Strip Steak", time:"15 min",
+   desc:"Leaner and chewier than ribeye, big beefy flavor. Pan or grill, salt only.", tags:["beef","quick"]},
+  {id:"burger-patties", cat:"dinner", name:"Bunless Cheeseburgers", time:"15 min",
+   desc:"Thick 80/20 patties, cheddar melted over the top. Stack them, eat with a fork.", tags:["beef","dairy","quick","budget"]},
+  {id:"chicken-thighs", cat:"dinner", name:"Crispy Chicken Thighs", time:"35 min",
+   desc:"Skin-on thighs, cast iron, skin-side down most of the way for glass-crisp skin.", tags:["poultry","budget"]},
+  {id:"lamb-chops", cat:"dinner", name:"Grilled Lamb Chops", time:"12 min",
+   desc:"Salt only, screaming-hot grill, pink centers. Eat them with your hands.", tags:["lamb","quick"]},
+  {id:"pork-belly-roast", cat:"dinner", name:"Roast Pork Belly", time:"2.5 hrs",
+   desc:"Slow roast, then a hot blast at the end for shattering crackling. Mostly hands-off.", tags:["pork","slow"]},
+  {id:"baked-salmon", cat:"dinner", name:"Butter-Baked Salmon", time:"20 min",
+   desc:"Fillet baked in plenty of butter until it just flakes. Spoon the butter back over.", tags:["seafood","quick"]},
+  {id:"shrimp-butter", cat:"dinner", name:"Shrimp in Butter", time:"10 min",
+   desc:"Big shrimp sautéed in an unreasonable amount of butter. Weeknight-fast.", tags:["seafood","quick"]},
+  {id:"short-ribs", cat:"dinner", name:"Slow-Cooked Short Ribs", time:"4 hrs",
+   desc:"Salted and slow-cooked until they fall off the bone. Set it and forget it.", tags:["beef","slow"]},
+  {id:"tbone", cat:"dinner", name:"T-Bone Steak", time:"18 min",
+   desc:"Strip on one side, filet on the other. A share-worthy centerpiece.", tags:["beef"]},
+  {id:"meatballs", cat:"dinner", name:"Beef & Pork Meatballs", time:"30 min",
+   desc:"50/50 beef and pork, an egg to bind, optional parmesan. Kids-and-adults food.", tags:["beef","pork","batch"]},
+  {id:"duck-legs", cat:"dinner", name:"Crispy Duck Legs", time:"1.5 hrs",
+   desc:"Slow-roasted in their own fat until the skin crisps. Restaurant food, zero effort.", tags:["poultry","slow"]},
+  {id:"scallops", cat:"dinner", name:"Scallops in Brown Butter", time:"10 min",
+   desc:"Hard sear for a golden crust, nutty brown butter spooned over. Date-night fast.", tags:["seafood","quick"]},
+  {id:"liver-bacon", cat:"dinner", name:"Beef Liver & Bacon", time:"15 min",
+   desc:"The most nutrient-dense food there is. Cooking it in bacon fat (with the bacon) helps it go down.", tags:["organ","pork","quick","budget"]},
+  {id:"whole-fish", cat:"dinner", name:"Whole Grilled Branzino", time:"20 min",
+   desc:"Salted inside and out, grilled until the skin crisps. Impressive and dead simple.", tags:["seafood","quick"]},
+  {id:"bone-marrow", cat:"dinner", name:"Bone Marrow & Steak", time:"25 min",
+   desc:"Roasted marrow bones — spread the marrow over seared steak like butter.", tags:["beef","organ"]},
+];
+
+const LS_KEY = "carnivorePrefs.v1";
+let prefs = {};
+try { prefs = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e) { prefs = {}; }
+const savePrefs = () => localStorage.setItem(LS_KEY, JSON.stringify(prefs));
+const byId = id => DISHES.find(d => d.id === id);
+
+/* ---------- render cards ---------- */
+function cardHTML(d){
+  const state = prefs[d.id] || "";
+  return `<article class="card ${state ? "is-"+state : ""}" data-id="${d.id}">
+    <span class="flag f-love">♥ Loved</span><span class="flag f-nope">Not for me</span>
+    <img src="images/${d.id}.jpg" alt="${d.name}" loading="lazy">
+    <div class="body">
+      <h4>${d.name}</h4>
+      <div class="desc">${d.desc}</div>
+      <div class="meta"><span class="tag time">⏱ ${d.time}</span>${d.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+      <div class="actions">
+        <button class="love ${state==="love"?"on":""}" data-act="love">♥ Love it</button>
+        <button class="nope ${state==="nope"?"on":""}" data-act="nope">✕ Not for me</button>
+      </div>
+    </div>
+  </article>`;
+}
+function renderGrids(){
+  document.getElementById("grid-breakfast").innerHTML =
+    DISHES.filter(d=>d.cat==="breakfast").map(cardHTML).join("");
+  document.getElementById("grid-dinner").innerHTML =
+    DISHES.filter(d=>d.cat==="dinner").map(cardHTML).join("");
+}
+
+/* ---------- voting ---------- */
+document.addEventListener("click", e=>{
+  const btn = e.target.closest(".actions button");
+  if(!btn) return;
+  const card = btn.closest(".card");
+  const id = card.dataset.id, act = btn.dataset.act;
+  prefs[id] = (prefs[id] === act) ? undefined : act;
+  if(prefs[id] === undefined) delete prefs[id];
+  savePrefs();
+  card.className = "card" + (prefs[id] ? " is-"+prefs[id] : "");
+  card.querySelector(".love").classList.toggle("on", prefs[id]==="love");
+  card.querySelector(".nope").classList.toggle("on", prefs[id]==="nope");
+  updateBadge();
+});
+
+/* ---------- picks tab ---------- */
+function pickRow(d){
+  return `<div class="pick-row" data-id="${d.id}">
+    <img src="images/${d.id}.jpg" alt="" loading="lazy">
+    <div><div class="nm">${d.name}</div><div class="cat">${d.cat}</div></div>
+    <button title="Clear vote" data-clear="${d.id}">↺</button>
+  </div>`;
+}
+function renderPicks(){
+  const loved = DISHES.filter(d=>prefs[d.id]==="love");
+  const noped = DISHES.filter(d=>prefs[d.id]==="nope");
+  const unrated = DISHES.filter(d=>!prefs[d.id]);
+  const fill = (elId, arr, emptyMsg) => {
+    const el = document.getElementById(elId);
+    el.innerHTML = arr.length ? arr.map(pickRow).join("") : `<div class="empty">${emptyMsg}</div>`;
+  };
+  fill("listLove", loved, "Nothing loved yet — go tap some plates!");
+  fill("listNope", noped, "Nothing rejected yet.");
+  fill("listUnrated", unrated, "You've rated everything 🎉");
+  document.getElementById("cntLove").textContent = loved.length;
+  document.getElementById("cntNope").textContent = noped.length;
+  document.getElementById("cntUnrated").textContent = unrated.length;
+}
+document.addEventListener("click", e=>{
+  const clear = e.target.closest("[data-clear]");
+  if(!clear) return;
+  delete prefs[clear.dataset.clear];
+  savePrefs(); renderGrids(); renderPicks(); updateBadge();
+});
+
+/* ---------- export ---------- */
+function prefsText(){
+  const loved = DISHES.filter(d=>prefs[d.id]==="love");
+  const noped = DISHES.filter(d=>prefs[d.id]==="nope");
+  const unrated = DISHES.filter(d=>!prefs[d.id]);
+  const line = arr => arr.length ? arr.map(d=>d.name).join(", ") : "(none)";
+  return `My carnivore meal preferences (${new Date().toISOString().slice(0,10)}):\n\n`+
+    `LOVE: ${line(loved)}\n\nNOT FOR ME: ${line(noped)}\n\nNOT RATED YET: ${line(unrated)}`;
+}
+document.getElementById("btnCopy").addEventListener("click", async ()=>{
+  const btn = document.getElementById("btnCopy");
+  try { await navigator.clipboard.writeText(prefsText()); }
+  catch(e){
+    const ta = document.createElement("textarea");
+    ta.value = prefsText(); document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove();
+  }
+  btn.textContent = "Copied ✓";
+  setTimeout(()=>btn.textContent = "Copy my preferences", 1800);
+});
+document.getElementById("btnShare").addEventListener("click", ()=>{
+  if(navigator.share) navigator.share({text: prefsText()}).catch(()=>{});
+  else alert(prefsText());
+});
+
+/* ---------- tabs ---------- */
+document.querySelectorAll("nav button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll("main section").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.getElementById("tab-"+b.dataset.tab).classList.add("active");
+    if(b.dataset.tab==="picks") renderPicks();
+    window.scrollTo({top:0});
+  });
+});
+function updateBadge(){
+  const n = Object.keys(prefs).length;
+  const badge = document.getElementById("navBadge");
+  badge.textContent = n;
+  badge.classList.toggle("show", n>0);
+}
+
+renderGrids(); renderPicks(); updateBadge();
+</script>
+</body>
+</html>
