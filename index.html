@@ -135,12 +135,13 @@
   .pick-row .cat{font-size:.72rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em}
   .pick-row button{border:0; background:none; font-size:1.05rem; cursor:pointer; padding:6px; color:var(--ink-soft)}
   .empty{color:var(--ink-soft); font-size:.92rem; background:var(--card); border:1.5px dashed var(--line); border-radius:12px; padding:16px; text-align:center}
-  .share-bar{display:flex; gap:10px; margin:4px 0 22px}
+  .share-bar{display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 22px}
   .share-bar button{
     flex:1; font:inherit; font-weight:700; font-size:.95rem; padding:13px 0;
     border-radius:12px; cursor:pointer; border:1.5px solid var(--accent);
   }
-  #btnCopy{background:var(--accent); color:#fff}
+  #btnSend{flex-basis:100%; background:var(--accent); color:#fff; font-size:1rem; padding:15px 0}
+  #btnCopy{background:var(--card); color:var(--accent)}
   #btnShare{background:var(--card); color:var(--accent)}
   .hint{font-size:.85rem; color:var(--ink-soft); background:var(--accent-soft); border-radius:12px; padding:12px 14px; margin-bottom:14px}
   footer{max-width:1080px; margin:30px auto 0; padding:0 20px; color:var(--ink-soft); font-size:.8rem; text-align:center}
@@ -237,9 +238,10 @@
 <!-- ================= MY PICKS ================= -->
 <section id="tab-picks">
   <h2>My picks</h2>
-  <div class="hint">📋 When you've voted on the plates, tap <b>Copy my preferences</b> and paste it to Claude — it'll remember what you love and suggest meals around it.</div>
+  <div class="hint">📤 When you've voted, tap <b>Send my votes to Claude</b> — a GitHub page opens with everything pre-filled, just press the green <b>Submit new issue</b> button. Claude picks it up from there. (The first time it may ask you to log in to GitHub.)</div>
   <div class="share-bar">
-    <button id="btnCopy">Copy my preferences</button>
+    <button id="btnSend">📤 Send my votes to Claude</button>
+    <button id="btnCopy">Copy instead</button>
     <button id="btnShare">Share…</button>
   </div>
   <div class="picks-block">
@@ -438,6 +440,14 @@ function prefsText(){
   return `My carnivore meal preferences (${new Date().toISOString().slice(0,10)}):\n\n`+
     `LOVE: ${line(loved)}\n\nNOT FOR ME: ${line(noped)}\n\nNOT RATED YET: ${line(unrated)}`;
 }
+document.getElementById("btnSend").addEventListener("click", ()=>{
+  // machine-readable block appended so Claude can parse votes exactly
+  const body = prefsText() + "\n\n```json\n" + JSON.stringify(prefs, null, 0) + "\n```";
+  const url = "https://github.com/rosicjacob-sys/carnivore-kitchen/issues/new" +
+    "?title=" + encodeURIComponent("Meal votes " + new Date().toISOString().slice(0,10)) +
+    "&body=" + encodeURIComponent(body);
+  window.open(url, "_blank");
+});
 document.getElementById("btnCopy").addEventListener("click", async ()=>{
   const btn = document.getElementById("btnCopy");
   try { await navigator.clipboard.writeText(prefsText()); }
