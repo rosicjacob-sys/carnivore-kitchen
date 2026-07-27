@@ -135,6 +135,7 @@
   .pick-row .cat{font-size:.72rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em}
   .pick-row button{border:0; background:none; font-size:1.05rem; cursor:pointer; padding:6px; color:var(--ink-soft)}
   .empty{color:var(--ink-soft); font-size:.92rem; background:var(--card); border:1.5px dashed var(--line); border-radius:12px; padding:16px; text-align:center}
+  .hidden-note{grid-column:1/-1}
   .share-bar{display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 22px}
   .share-bar button{
     flex:1; font:inherit; font-weight:700; font-size:.95rem; padding:13px 0;
@@ -434,12 +435,20 @@ function cardHTML(d){
   </article>`;
 }
 function renderGrids(){
-  // unvoted (incl. new) first, loved next, rejected sink to the bottom; sorted only on render so cards don't jump mid-vote
-  const rank = d => prefs[d.id]==="nope" ? 2 : prefs[d.id]==="love" ? 1 : 0;
-  const sorted = cat => DISHES.filter(d=>d.cat===cat)
-    .map((d,i)=>({d,i})).sort((a,b)=>rank(a.d)-rank(b.d) || a.i-b.i).map(x=>x.d);
-  document.getElementById("grid-breakfast").innerHTML = sorted("breakfast").map(cardHTML).join("");
-  document.getElementById("grid-dinner").innerHTML = sorted("dinner").map(cardHTML).join("");
+  // rejected plates are hidden from the grids entirely (undo lives in My Picks);
+  // unvoted (incl. new) first, loved after; sorted only on render so cards don't jump mid-vote
+  const rank = d => prefs[d.id]==="love" ? 1 : 0;
+  const build = cat => {
+    const all = DISHES.filter(d=>d.cat===cat);
+    const shown = all.filter(d=>prefs[d.id]!=="nope")
+      .map((d,i)=>({d,i})).sort((a,b)=>rank(a.d)-rank(b.d) || a.i-b.i).map(x=>x.d);
+    const hidden = all.length - shown.length;
+    return shown.map(cardHTML).join("") + (hidden
+      ? `<div class="empty hidden-note">🙈 ${hidden} plate${hidden>1?"s":""} you rejected ${hidden>1?"are":"is"} hidden — undo anytime in My Picks</div>`
+      : "");
+  };
+  document.getElementById("grid-breakfast").innerHTML = build("breakfast");
+  document.getElementById("grid-dinner").innerHTML = build("dinner");
 }
 
 /* ---------- voting ---------- */
@@ -455,6 +464,8 @@ document.addEventListener("click", e=>{
   card.querySelector(".love").classList.toggle("on", prefs[id]==="love");
   card.querySelector(".nope").classList.toggle("on", prefs[id]==="nope");
   updateBadge();
+  // a fresh "nope" removes the card from the grid after brief visual feedback
+  if(prefs[id]==="nope") setTimeout(renderGrids, 400);
 });
 
 /* ---------- picks tab ---------- */
